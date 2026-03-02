@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Storage</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* 头部样式 */
+    .header {
+      text-align: center;
+      padding: 40px 20px;
+      color: white;
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .header p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+
+    /* 搜索和过滤区域 */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+      margin-bottom: 30px;
+      padding: 0 20px;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 250px;
+      max-width: 400px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 25px;
+      font-size: 1rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      outline: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .search-box input:focus {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+
+    .category-filter {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .category-btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.3s;
+      backdrop-filter: blur(10px);
+    }
+
+    .category-btn:hover {
+      background: rgba(255,255,255,0.3);
+      transform: translateY(-2px);
+    }
+
+    .category-btn.active {
+      background: white;
+      color: #667eea;
+      font-weight: 600;
+    }
+
+    /* 资源卡片网格 */
+    .resources-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      padding: 0 20px;
+    }
+
+    .resource-card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+
+    .resource-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .card-icon {
+      font-size: 2rem;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 12px;
+    }
+
+    .card-title {
+      flex: 1;
+    }
+
+    .card-title h3 {
+      font-size: 1.1rem;
+      color: #333;
+      margin-bottom: 4px;
+    }
+
+    .card-category {
+      font-size: 0.75rem;
+      color: #888;
+      background: #f5f5f5;
+      padding: 3px 10px;
+      border-radius: 10px;
+      display: inline-block;
+    }
+
+    .card-description {
+      color: #666;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    /* 空状态 */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: white;
+    }
+
+    .empty-state h3 {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+    }
+
+    .empty-state p {
+      opacity: 0.8;
+    }
+
+    /* 统计信息 */
+    .stats {
+      text-align: center;
+      color: white;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+      opacity: 0.9;
+    }
+
+    /* 页脚 */
+    .footer {
+      text-align: center;
+      padding: 40px 20px;
+      color: white;
+      opacity: 0.8;
+      font-size: 0.9rem;
+    }
+
+    /* 加载动画 */
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 300px;
+    }
+
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* 响应式 */
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 1.8rem;
+      }
+
+      .controls {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .search-box {
+        width: 100%;
+        max-width: none;
+      }
+
+      .resources-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 头部 -->
+    <header class="header">
+      <h1>Storage</h1>
+    </header>
+
+    <!-- 搜索和过滤 -->
+    <div class="controls">
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="🔍 搜索资源名称或描述...">
+      </div>
+    </div>
+
+    <!-- 分类过滤 -->
+    <div class="category-filter" id="categoryFilter">
+      <!-- 动态生成 -->
+    </div>
+
+    <!-- 统计信息 -->
+    <div class="stats" id="stats"></div>
+
+    <!-- 资源列表 -->
+    <div class="resources-grid" id="resourcesGrid">
+      <div class="loading">
+        <div class="loading-spinner"></div>
+      </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+      <p>Page by Greenwoo</p>
+    </footer>
+  </div>
+
+  <script>
+    // 全局数据
+    let allResources = [];
+    let allCategories = [];
+    let currentCategory = '全部';
+    let searchKeyword = '';
+
+    // DOM 元素
+    const searchInput = document.getElementById('searchInput');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const resourcesGrid = document.getElementById('resourcesGrid');
+    const statsEl = document.getElementById('stats');
+
+    // 加载 JSON 数据
+    async function loadResources() {
+      try {
+        const response = await fetch('./resources.json');
+        const data = await response.json();
+        allResources = data.resources || [];
+        allCategories = data.categories || ['全部'];
+        
+        renderCategories();
+        renderResources();
+      } catch (error) {
+        console.error('加载资源失败:', error);
+        resourcesGrid.innerHTML = `
+          <div class="empty-state">
+            <h3>加载失败</h3>
+            <p>请确保文件存在且格式正确</p>
+          </div>
+        `;
+      }
+    }
+
+    // 渲染分类按钮
+    function renderCategories() {
+      categoryFilter.innerHTML = allCategories.map(cat => `
+        <button class="category-btn ${cat === currentCategory ? 'active' : ''}" 
+                onclick="filterByCategory('${cat}')">
+          ${cat}
+        </button>
+      `).join('');
+    }
+
+    // 过滤资源
+    function getFilteredResources() {
+      return allResources.filter(resource => {
+        const matchCategory = currentCategory === '全部' || resource.category === currentCategory;
+        const matchSearch = !searchKeyword || 
+          resource.name.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+          resource.description.toLowerCase().includes(searchKeyword.toLowerCase());
+        return matchCategory && matchSearch;
+      });
+    }
+
+    // 渲染资源卡片
+    function renderResources() {
+      const filtered = getFilteredResources();
+      
+      // 更新统计
+      statsEl.textContent = `共 ${filtered.length} 个资源`;
+
+      if (filtered.length === 0) {
+        resourcesGrid.innerHTML = `
+          <div class="empty-state">
+            <h3>🔍 未找到匹配资源</h3>
+            <p>尝试更换搜索关键词或分类</p>
+          </div>
+        `;
+        return;
+      }
+
+      resourcesGrid.innerHTML = filtered.map(resource => `
+        <a href="${resource.url}" target="_blank" rel="noopener noreferrer" class="resource-card">
+          <div class="card-header">
+            <div class="card-icon">${resource.icon || '📌'}</div>
+            <div class="card-title">
+              <h3>${resource.name}</h3>
+              <span class="card-category">${resource.category}</span>
+            </div>
+          </div>
+          <p class="card-description">${resource.description}</p>
+        </a>
+      `).join('');
+    }
+
+    // 按分类过滤
+    function filterByCategory(category) {
+      currentCategory = category;
+      renderCategories();
+      renderResources();
+    }
+
+    // 搜索防抖
+    let searchTimeout;
+    searchInput.addEventListener('input', (e) => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        searchKeyword = e.target.value.trim();
+        renderResources();
+      }, 300);
+    });
+
+    // 初始化
+    loadResources();
+  </script>
+</body>
+</html>

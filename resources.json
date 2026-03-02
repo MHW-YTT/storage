@@ -1,0 +1,11 @@
+{
+  "resources": [
+    {
+      "id": 1,
+      "name": "AU整合私服",
+      "description": "整合了多个AU私服，祝你游玩愉快！",
+      "category": "私服",
+      "url": "https://storage.ytt0.top/AUMorePrivateServer/MorePrivateServer.zip",
+      "icon": "📘"
+    }
+}
