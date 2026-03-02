@@ -299,7 +299,7 @@
     // 加载 JSON 数据
     async function loadResources() {
       try {
-        const response = await fetch('./resources.json');
+        const response = await fetch('resources.json');
         const data = await response.json();
         allResources = data.resources || [];
         allCategories = data.categories || ['全部'];
