@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>游戏名称工坊 · 智能逐字颜色</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #1a2a2f 0%, #0e1a1f 100%);
+            font-family: 'Segoe UI', 'Roboto', system-ui, -apple-system, 'Helvetica Neue', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .maker-card {
+            max-width: 900px;
+            width: 100%;
+            background: rgba(30, 40, 35, 0.85);
+            backdrop-filter: blur(2px);
+            border-radius: 2.5rem;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            padding: 1.8rem 2rem 2.2rem;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(80, 120, 100, 0.5);
+        }
+
+        h1 {
+            margin: 0 0 0.3rem 0;
+            font-size: 1.9rem;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            background: linear-gradient(135deg, #c0ffd0, #90d6a0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 3px rgba(0,0,0,0.1);
+        }
+
+        .sub {
+            color: #9bc4ab;
+            border-left: 3px solid #2f9e5a;
+            padding-left: 12px;
+            margin: 0 0 1.8rem 0;
+            font-size: 0.85rem;
+            opacity: 0.85;
+        }
+
+        .field-group {
+            margin-bottom: 1.6rem;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-weight: 500;
+            color: #e2f0e6;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .mode-switch {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            background: #1e2a24;
+            padding: 0.6rem 1rem;
+            border-radius: 3rem;
+            margin-bottom: 0.5rem;
+        }
+        .mode-toggle {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .mode-toggle button {
+            background: #2f5a45;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 2rem;
+            font-weight: 500;
+            cursor: pointer;
+            color: #d0ecd9;
+            transition: 0.1s;
+        }
+        .mode-toggle button.active {
+            background: #2f9e5a;
+            color: #0f241c;
+            box-shadow: 0 0 6px #4cc57b;
+        }
+        .mode-hint {
+            font-size: 0.7rem;
+            color: #9bc4ab;
+        }
+
+        input, .color-preview-input {
+            background: #1e2a24;
+            border: 1px solid #3c5a4a;
+            border-radius: 1.2rem;
+            padding: 0.7rem 1rem;
+            font-size: 1rem;
+            color: #f0f9f0;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #5fbb82;
+            box-shadow: 0 0 0 2px rgba(47, 158, 90, 0.3);
+            background: #192e24;
+        }
+
+        .color-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        input[type="color"] {
+            width: 56px;
+            height: 48px;
+            border-radius: 20px;
+            border: 2px solid #4f7b64;
+            cursor: pointer;
+            background: #1e2a24;
+            padding: 4px;
+        }
+        .color-hex {
+            flex: 1;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.5px;
+        }
+
+        .size-slider-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        input[type="range"] {
+            flex: 2;
+            min-width: 160px;
+            height: 5px;
+            -webkit-appearance: none;
+            background: #2b3f35;
+            border-radius: 10px;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #8fcaa6;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+        .size-number {
+            width: 70px;
+            text-align: center;
+            background: #1e2a24;
+            border: 1px solid #3c5a4a;
+            border-radius: 40px;
+            padding: 0.5rem 0;
+            font-weight: 600;
+        }
+
+        .warning-message {
+            background: rgba(220, 80, 50, 0.18);
+            border-left: 4px solid #f97316;
+            padding: 8px 12px;
+            border-radius: 14px;
+            font-size: 0.75rem;
+            color: #ffc89c;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 6px;
+        }
+        .warning-message.hidden {
+            display: none;
+        }
+
+        .checkbox-group {
+            flex-direction: row;
+            align-items: center;
+            gap: 12px;
+        }
+        .checkbox-group label {
+            cursor: pointer;
+        }
+        input[type="checkbox"] {
+            width: 1.2rem;
+            height: 1.2rem;
+            accent-color: #2f9e5a;
+            margin: 0;
+        }
+
+        .per-char-panel {
+            background: #0f1915;
+            border-radius: 1.5rem;
+            padding: 1rem;
+            margin: 0.5rem 0 1rem;
+            border: 1px solid #2f5a45;
+        }
+        .char-color-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            justify-content: flex-start;
+            max-height: 220px;
+            overflow-y: auto;
+            padding: 6px 4px;
+        }
+        .char-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #1e2a24;
+            border-radius: 16px;
+            padding: 8px 6px;
+            min-width: 70px;
+            transition: 0.05s linear;
+        }
+        .char-symbol {
+            font-size: 1.3rem;
+            font-weight: 600;
+            background: #030a07;
+            padding: 4px 10px;
+            border-radius: 30px;
+            margin-bottom: 6px;
+            color: #e0f0e0;
+        }
+        .char-color-input {
+            width: 48px;
+            height: 36px;
+            border-radius: 12px;
+            border: 1px solid #4f7b64;
+            cursor: pointer;
+            background: #111;
+            margin-top: 4px;
+        }
+        .batch-colors {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            justify-content: flex-end;
+        }
+        .batch-btn {
+            background: #2f5a45;
+            border: none;
+            border-radius: 2rem;
+            padding: 4px 12px;
+            font-size: 0.7rem;
+            color: #d4ecd9;
+            cursor: pointer;
+        }
+        .batch-btn:hover {
+            background: #4a7b62;
+        }
+
+        .preview-area {
+            background: #0f1915;
+            border-radius: 1.8rem;
+            padding: 1.2rem 1.5rem;
+            margin: 1rem 0 1.5rem;
+            border: 1px solid #2f5a45;
+        }
+        .preview-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 500;
+            color: #77b38b;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .preview-text {
+            background: #ffffff;
+            padding: 1.2rem;
+            border-radius: 1.2rem;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            font-weight: 500;
+            border: 1px solid #c0d0c0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            word-break: break-all;
+        }
+        .code-output {
+            background: #0b1712;
+            border-radius: 1.2rem;
+            padding: 0.8rem 1rem;
+            margin: 0.8rem 0 1.2rem;
+            border: 1px solid #3a6a54;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .code-output pre {
+            margin: 0;
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #d4f5e3;
+            white-space: pre-wrap;
+            word-break: break-all;
+            flex: 1;
+        }
+        .copy-btn {
+            background: #2f9e5a;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            font-size: 0.75rem;
+            color: #0f241c;
+            cursor: pointer;
+        }
+        .toast-msg {
+            text-align: center;
+            font-size: 0.75rem;
+            color: #bde5cb;
+            margin-top: 8px;
+        }
+        footer {
+            font-size: 0.7rem;
+            text-align: center;
+            color: #5a8975;
+            margin-top: 1.5rem;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="maker-card">
+    <h1>🎮 游戏名称工坊 · 智能逐字</h1>
+    <div class="sub">逐字颜色模式下，<strong>仅对颜色不同的字符单独添加&lt;color&gt;标签</strong>，相同颜色字符直接输出，代码更简洁</div>
+
+    <div class="field-group mode-switch">
+        <div class="mode-toggle">
+            <span style="color:#e2f0e6;">🎨 颜色模式：</span>
+            <button id="uniformModeBtn" class="active">统一颜色</button>
+            <button id="perCharModeBtn">逐字独立颜色</button>
+        </div>
+        <div class="mode-hint">逐字模式：未单独设置颜色的字符将沿用全局色，且不会产生冗余标签</div>
+    </div>
+
+    <div class="field-group">
+        <label>📝 游戏名称文本</label>
+        <input type="text" id="gameNameInput" value="绿林Greenwoo" placeholder="例如: 绿林Greenwoo">
+    </div>
+
+    <!-- 统一颜色区域 -->
+    <div id="uniformColorArea">
+        <div class="field-group">
+            <label>🎨 全局字体颜色</label>
+            <div class="color-row">
+                <input type="color" id="globalColorPicker" value="#068D55">
+                <input type="text" id="globalColorHex" class="color-hex" value="#068D55" maxlength="7">
+            </div>
+        </div>
+    </div>
+
+    <!-- 逐字颜色面板 -->
+    <div id="perCharColorArea" class="per-char-panel hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="color:#c0f0d0; font-size:0.8rem;">✨ 每个字符单独颜色 (仅修改需要特别的字符)</span>
+            <div class="batch-colors">
+                <button id="batchApplyRainbow" class="batch-btn">🌈 彩虹渐变</button>
+                <button id="batchResetToGlobal" class="batch-btn">🎨 全部重置为全局色</button>
+            </div>
+        </div>
+        <div id="charColorGrid" class="char-color-grid">
+            <!-- 动态生成 -->
+        </div>
+        <div style="font-size:0.7rem; color:#86b79a; margin-top: 8px;">💡 提示：与全局色相同的字符在输出代码时不会产生单独的&lt;color&gt;标签，保持代码干净</div>
+    </div>
+
+    <!-- 字号 & 斜体 -->
+    <div class="field-group">
+        <label>🔠 字号 (size) · 范围 1~9</label>
+        <div class="size-slider-row">
+            <input type="range" id="fontSizeSlider" min="1" max="9" value="6" step="1">
+            <input type="number" id="fontSizeNumber" class="size-number" min="1" max="9" step="1" value="6">
+        </div>
+        <div id="sizeWarning" class="warning-message hidden">
+            ⚠️ 字号大于5 可能会影响他人的游戏体验
+        </div>
+    </div>
+
+    <div class="field-group checkbox-group">
+        <label>
+            <input type="checkbox" id="italicCheckbox"> ✨ 斜体样式 (<i>&lt;i&gt;</i> 标签) 全局生效
+        </label>
+    </div>
+
+    <!-- 预览区 -->
+    <div class="preview-area">
+        <div class="preview-title">
+            🖌️ 实时预览 (白色背景)
+            <span>逐字颜色效果</span>
+        </div>
+        <div class="preview-text" id="previewBox"></div>
+        <div style="font-size: 0.65rem; margin-top: 10px; text-align: right; opacity: 0.7;">
+            🔍 预览字号已按比例放大 (1→16px, 9→48px)
+        </div>
+    </div>
+
+    <div class="field-group">
+        <label>📋 生成的标签代码 (智能精简)</label>
+        <div class="code-output">
+            <pre id="codeResult">&lt;size=6&gt;&lt;color=#068D55&gt;绿林Greenwoo&lt;/color&gt;&lt;/size&gt;</pre>
+            <button class="copy-btn" id="copyBtn">📋 复制代码</button>
+        </div>
+        <div id="copyToast" class="toast-msg"></div>
+    </div>
+    <footer>⚡ 逐字模式下仅对颜色不同于全局色的字符添加 &lt;color&gt; 标签，其余文本直接输出，最大限度精简代码</footer>
+</div>
+
+<script>
+    (function(){
+        // DOM 元素
+        const nameInput = document.getElementById('gameNameInput');
+        const uniformModeBtn = document.getElementById('uniformModeBtn');
+        const perCharModeBtn = document.getElementById('perCharModeBtn');
+        const uniformArea = document.getElementById('uniformColorArea');
+        const perCharArea = document.getElementById('perCharColorArea');
+        const globalColorPicker = document.getElementById('globalColorPicker');
+        const globalColorHex = document.getElementById('globalColorHex');
+        const fontSizeSlider = document.getElementById('fontSizeSlider');
+        const fontSizeNumber = document.getElementById('fontSizeNumber');
+        const italicCheck = document.getElementById('italicCheckbox');
+        const previewBox = document.getElementById('previewBox');
+        const codeResultPre = document.getElementById('codeResult');
+        const copyBtn = document.getElementById('copyBtn');
+        const copyToast = document.getElementById('copyToast');
+        const sizeWarningDiv = document.getElementById('sizeWarning');
+        const charColorGrid = document.getElementById('charColorGrid');
+        const batchRainbow = document.getElementById('batchApplyRainbow');
+        const batchResetGlobal = document.getElementById('batchResetToGlobal');
+
+        let currentMode = 'uniform'; // 'uniform' or 'perchar'
+        let perCharColors = [];       // 存储每个字符的颜色值（hex）
+        let lastGeneratedCode = '';
+
+        // ---- 辅助函数 ----
+        function normalizeColor(hexValue) {
+            let val = hexValue.trim();
+            if (!val.startsWith('#')) val = '#' + val;
+            const hexPattern = /^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/;
+            if (hexPattern.test(val)) {
+                if (val.length === 4) {
+                    const r = val[1], g = val[2], b = val[3];
+                    return `#${r}${r}${g}${g}${b}${b}`;
+                }
+                return val.toUpperCase();
+            }
+            return '#068D55';
+        }
+
+        function updateGlobalColorFromPicker() {
+            const val = globalColorPicker.value;
+            globalColorHex.value = val.toUpperCase();
+        }
+        function updateGlobalColorFromHex() {
+            let fixed = normalizeColor(globalColorHex.value);
+            globalColorHex.value = fixed;
+            globalColorPicker.value = fixed;
+        }
+
+        function getGlobalColor() {
+            return normalizeColor(globalColorHex.value);
+        }
+
+        function splitChars(str) {
+            return Array.from(str);
+        }
+
+        // 重建逐字面板
+        function rebuildPerCharPanel() {
+            const text = nameInput.value.trim();
+            if (text === "") {
+                charColorGrid.innerHTML = '<div style="color:#aaa;">请输入游戏名称</div>';
+                perCharColors = [];
+                return;
+            }
+            const chars = splitChars(text);
+            const globalColor = getGlobalColor();
+            if (perCharColors.length !== chars.length) {
+                perCharColors = chars.map(() => globalColor);
+            }
+            charColorGrid.innerHTML = '';
+            chars.forEach((ch, idx) => {
+                const container = document.createElement('div');
+                container.className = 'char-item';
+                const symbolSpan = document.createElement('div');
+                symbolSpan.className = 'char-symbol';
+                symbolSpan.textContent = ch === ' ' ? '␣' : ch;
+                const colorInput = document.createElement('input');
+                colorInput.type = 'color';
+                colorInput.className = 'char-color-input';
+                colorInput.value = perCharColors[idx];
+                colorInput.addEventListener('input', (e) => {
+                    perCharColors[idx] = e.target.value;
+                    refreshAll();
+                });
+                container.appendChild(symbolSpan);
+                container.appendChild(colorInput);
+                charColorGrid.appendChild(container);
+            });
+        }
+
+        function batchSetColors(colorHex) {
+            const text = nameInput.value.trim();
+            if (text === "") return;
+            const chars = splitChars(text);
+            perCharColors = chars.map(() => colorHex);
+            rebuildPerCharPanel();
+            refreshAll();
+        }
+
+        function hslToHex(hslStr) {
+            const match = hslStr.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
+            if (!match) return '#068D55';
+            let h = parseInt(match[1]);
+            let s = parseInt(match[2]) / 100;
+            let l = parseInt(match[3]) / 100;
+            let c = (1 - Math.abs(2 * l - 1)) * s;
+            let hp = h / 60;
+            let x = c * (1 - Math.abs((hp % 2) - 1));
+            let r1, g1, b1;
+            if (hp <= 1) { r1 = c; g1 = x; b1 = 0; }
+            else if (hp <= 2) { r1 = x; g1 = c; b1 = 0; }
+            else if (hp <= 3) { r1 = 0; g1 = c; b1 = x; }
+            else if (hp <= 4) { r1 = 0; g1 = x; b1 = c; }
+            else if (hp <= 5) { r1 = x; g1 = 0; b1 = c; }
+            else { r1 = c; g1 = 0; b1 = x; }
+            let m = l - c / 2;
+            let r = Math.round((r1 + m) * 255);
+            let g = Math.round((g1 + m) * 255);
+            let b = Math.round((b1 + m) * 255);
+            return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`;
+        }
+
+        function applyRainbow() {
+            const text = nameInput.value.trim();
+            if (text === "") return;
+            const chars = splitChars(text);
+            const total = chars.length;
+            const newColors = chars.map((_, idx) => {
+                const hue = (idx * 360 / total) % 360;
+                return hslToHex(`hsl(${hue}, 80%, 55%)`);
+            });
+            perCharColors = newColors;
+            rebuildPerCharPanel();
+            refreshAll();
+        }
+
+        // 核心：智能生成代码（逐字模式下仅对颜色不同的字符单独包裹）
+        function generateTagCode() {
+            const gameName = nameInput.value.trim();
+            if (gameName === "") return "";
+            const chars = splitChars(gameName);
+            let sizeVal = parseInt(fontSizeSlider.value, 10);
+            if (isNaN(sizeVal)) sizeVal = 6;
+            sizeVal = Math.min(9, Math.max(1, sizeVal));
+            const isItalic = italicCheck.checked;
+
+            // 获取最终使用的颜色数组
+            let colorArray;
+            if (currentMode === 'uniform') {
+                const global = getGlobalColor();
+                colorArray = chars.map(() => global);
+            } else {
+                // 逐字模式，确保长度一致
+                if (perCharColors.length !== chars.length) {
+                    const global = getGlobalColor();
+                    perCharColors = chars.map(() => global);
+                    rebuildPerCharPanel();
+                }
+                colorArray = [...perCharColors];
+            }
+
+            const globalColor = getGlobalColor();
+
+            // 构建内部字符串（智能合并）
+            let inner = '';
+            if (currentMode === 'uniform') {
+                // 统一模式：整个文本一个 color 标签
+                inner = `<color=${globalColor}>${escapeHtml(gameName)}</color>`;
+            } else {
+                // 逐字模式：只对颜色不等于全局色的字符单独加标签
+                let currentRun = '';      // 当前连续相同颜色（且等于全局色）的普通文本块
+                let lastColor = null;
+                for (let i = 0; i < chars.length; i++) {
+                    const ch = chars[i];
+                    const color = colorArray[i];
+                    const escapedCh = escapeHtml(ch);
+                    if (color === globalColor) {
+                        // 与全局色相同，可以直接输出文本
+                        currentRun += escapedCh;
+                    } else {
+                        // 遇到不同颜色，先 flush 之前的普通文本块
+                        if (currentRun !== '') {
+                            inner += currentRun;
+                            currentRun = '';
+                        }
+                        // 输出带颜色的标签
+                        inner += `<color=${color}>${escapedCh}</color>`;
+                    }
+                }
+                // 最后 flush 剩余的普通文本
+                if (currentRun !== '') {
+                    inner += currentRun;
+                }
+
+                // 如果整个 inner 没有任何 color 标签（即所有字符都是全局色），则退化为一个 color 包裹
+                if (!inner.includes('<color=')) {
+                    inner = `<color=${globalColor}>${escapeHtml(gameName)}</color>`;
+                }
+            }
+
+            let result = `<size=${sizeVal}>${inner}</size>`;
+            if (isItalic) {
+                result = `<i>${result}</i>`;
+            }
+            return result;
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        // 预览更新（逐字颜色效果，始终按实际颜色展示）
+        function updatePreview() {
+            const gameName = nameInput.value.trim();
+            if (gameName === "") {
+                previewBox.innerHTML = '<span style="opacity:0.5;">[请输入游戏名称]</span>';
+                return;
+            }
+            const chars = splitChars(gameName);
+            let sizeVal = parseInt(fontSizeSlider.value, 10);
+            if (isNaN(sizeVal)) sizeVal = 6;
+            sizeVal = Math.min(9, Math.max(1, sizeVal));
+            const previewFontSize = 16 + (sizeVal - 1) * 4;
+            const isItalic = italicCheck.checked;
+
+            let colorArray;
+            if (currentMode === 'uniform') {
+                const global = getGlobalColor();
+                colorArray = chars.map(() => global);
+            } else {
+                if (perCharColors.length !== chars.length) {
+                    const global = getGlobalColor();
+                    perCharColors = chars.map(() => global);
+                    rebuildPerCharPanel();
+                }
+                colorArray = [...perCharColors];
+            }
+
+            previewBox.innerHTML = '';
+            for (let i = 0; i < chars.length; i++) {
+                const ch = chars[i];
+                const color = colorArray[i];
+                const span = document.createElement('span');
+                span.textContent = ch;
+                span.style.color = color;
+                span.style.fontSize = `${previewFontSize}px`;
+                span.style.fontStyle = isItalic ? 'italic' : 'normal';
+                span.style.fontWeight = '500';
+                previewBox.appendChild(span);
+            }
+        }
+
+        function updateWarning(sizeVal) {
+            if (sizeVal > 5) sizeWarningDiv.classList.remove('hidden');
+            else sizeWarningDiv.classList.add('hidden');
+        }
+
+        function refreshAll() {
+            // 同步字号
+            let sizeNum = parseInt(fontSizeSlider.value, 10);
+            if (isNaN(sizeNum)) sizeNum = 6;
+            sizeNum = Math.min(9, Math.max(1, sizeNum));
+            fontSizeSlider.value = sizeNum;
+            fontSizeNumber.value = sizeNum;
+            updateWarning(sizeNum);
+
+            if (currentMode === 'uniform') {
+                let globalCol = normalizeColor(globalColorHex.value);
+                globalColorPicker.value = globalCol;
+                globalColorHex.value = globalCol;
+            } else {
+                // 逐字模式下，确保面板与文本长度同步
+                const text = nameInput.value.trim();
+                if (text !== "") {
+                    const chars = splitChars(text);
+                    if (perCharColors.length !== chars.length) {
+                        const global = getGlobalColor();
+                        perCharColors = chars.map(() => global);
+                        rebuildPerCharPanel();
+                    } else {
+                        // 仅仅刷新面板值（防止外部颜色不同步）
+                        rebuildPerCharPanel();
+                    }
+                }
+            }
+
+            updatePreview();
+            const code = generateTagCode();
+            if (code === "") {
+                codeResultPre.textContent = '<!-- 请输入游戏名称 -->';
+                lastGeneratedCode = '';
+            } else {
+                codeResultPre.textContent = code;
+                lastGeneratedCode = code;
+            }
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            if (mode === 'uniform') {
+                uniformArea.classList.remove('hidden');
+                perCharArea.classList.add('hidden');
+                uniformModeBtn.classList.add('active');
+                perCharModeBtn.classList.remove('active');
+            } else {
+                uniformArea.classList.add('hidden');
+                perCharArea.classList.remove('hidden');
+                uniformModeBtn.classList.remove('active');
+                perCharModeBtn.classList.add('active');
+                const text = nameInput.value.trim();
+                if (text !== "") {
+                    const global = getGlobalColor();
+                    perCharColors = splitChars(text).map(() => global);
+                    rebuildPerCharPanel();
+                } else {
+                    perCharColors = [];
+                    charColorGrid.innerHTML = '<div style="color:#aaa;">请输入游戏名称</div>';
+                }
+            }
+            refreshAll();
+        }
+
+        function onNameChange() {
+            if (currentMode === 'perchar') {
+                const text = nameInput.value.trim();
+                if (text === "") {
+                    perCharColors = [];
+                    charColorGrid.innerHTML = '<div style="color:#aaa;">请输入游戏名称</div>';
+                } else {
+                    const global = getGlobalColor();
+                    const newChars = splitChars(text);
+                    const newColors = [];
+                    for (let i=0; i<newChars.length; i++) {
+                        if (i < perCharColors.length) newColors.push(perCharColors[i]);
+                        else newColors.push(global);
+                    }
+                    perCharColors = newColors;
+                    rebuildPerCharPanel();
+                }
+            }
+            refreshAll();
+        }
+
+        // 事件绑定
+        nameInput.addEventListener('input', onNameChange);
+        uniformModeBtn.addEventListener('click', () => setMode('uniform'));
+        perCharModeBtn.addEventListener('click', () => setMode('perchar'));
+        globalColorPicker.addEventListener('input', () => {
+            updateGlobalColorFromPicker();
+            refreshAll();
+        });
+        globalColorHex.addEventListener('input', () => {
+            updateGlobalColorFromHex();
+            refreshAll();
+        });
+        globalColorHex.addEventListener('blur', () => {
+            updateGlobalColorFromHex();
+            refreshAll();
+        });
+        fontSizeSlider.addEventListener('input', (e) => {
+            fontSizeNumber.value = e.target.value;
+            refreshAll();
+        });
+        fontSizeNumber.addEventListener('input', (e) => {
+            let v = parseInt(e.target.value);
+            if (isNaN(v)) v=6;
+            v = Math.min(9,Math.max(1,v));
+            fontSizeSlider.value = v;
+            fontSizeNumber.value = v;
+            refreshAll();
+        });
+        italicCheck.addEventListener('change', refreshAll);
+
+        batchRainbow.addEventListener('click', () => {
+            if (currentMode === 'perchar') applyRainbow();
+        });
+        batchResetGlobal.addEventListener('click', () => {
+            if (currentMode === 'perchar') {
+                const global = getGlobalColor();
+                batchSetColors(global);
+            }
+        });
+
+        copyBtn.addEventListener('click', () => {
+            if (!lastGeneratedCode) {
+                copyToast.textContent = '⚠️ 无可复制的代码';
+                setTimeout(() => copyToast.textContent='',1500);
+                return;
+            }
+            navigator.clipboard.writeText(lastGeneratedCode).then(() => {
+                copyToast.textContent = '✅ 代码已复制！';
+                setTimeout(() => copyToast.textContent='',2000);
+            }).catch(() => {
+                copyToast.textContent = '❌ 复制失败，手动选取';
+                setTimeout(()=>copyToast.textContent='',1500);
+            });
+        });
+
+        function init() {
+            setMode('uniform');
+            refreshAll();
+        }
+        init();
+    })();
+</script>
+</body>
+</html>
